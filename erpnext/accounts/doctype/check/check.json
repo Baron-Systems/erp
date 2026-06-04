@@ -1,0 +1,203 @@
+{
+ "actions": [],
+ "allow_auto_repeat": 1,
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-05-13 16:28:29.127207",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_pvzp",
+  "customer",
+  "chek_value",
+  "number_check",
+  "chek_status",
+  "column_break_mxhi",
+  "name_check_issuer",
+  "check_due_date",
+  "payments_against_invoice",
+  "image_check",
+  "naming_series",
+  "supplier_details",
+  "supplier",
+  "date_of_endorsement",
+  "payment_voucher",
+  "installment_payment_supplier",
+  "remaining_amount_for_supplier",
+  "installment_payment_customer_section",
+  "installment_payment_customer",
+  "remaining_amount_for_customer"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_pvzp",
+   "fieldtype": "Section Break",
+   "label": "\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0634\u064a\u0643"
+  },
+  {
+   "fieldname": "column_break_mxhi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "\u0625\u0633\u0645 \u0627\u0644\u0645\u0648\u0631\u062f (\u0627\u0644\u0645\u0638\u0647\u0631 \u0644\u0647 \u0627\u0644\u0634\u064a\u0643)",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "\u0625\u0633\u0645 \u0627\u0644\u0639\u0645\u064a\u0644 (\u0645\u0638\u0647\u0631  \u0627\u0644\u0634\u064a\u0643)",
+   "options": "Customer"
+  },
+  {
+   "bold": 1,
+   "fieldname": "chek_value",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "\u0642\u064a\u0645\u0629 \u0627\u0644\u0634\u064a\u0643",
+   "placeholder": "xxxxx",
+   "reqd": 1
+  },
+  {
+   "fieldname": "chek_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "\u062d\u0627\u0644\u0629 \u0627\u0644\u0634\u064a\u0643",
+   "options": "\u0641\u064a \u0627\u0644\u0635\u0646\u062f\u0648\u0642\n\u0645\u062f\u0641\u0648\u0639\n\u0645\u0638\u0647\u0631 \u0644\u0645\u0648\u0631\u062f\n\u0631\u0627\u062c\u0639\n\u0645\u0642\u0633\u0637",
+   "reqd": 1
+  },
+  {
+   "fieldname": "name_check_issuer",
+   "fieldtype": "Data",
+   "label": "\u0625\u0633\u0645 \u0645\u062d\u0631\u0631 \u0627\u0644\u0634\u064a\u0643"
+  },
+  {
+   "fieldname": "check_due_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "\u0646\u0627\u0631\u064a\u062e \u0627\u0633\u062a\u062d\u0642\u0627\u0642 \u0627\u0644\u0634\u064a\u0643",
+   "reqd": 1
+  },
+  {
+   "fieldname": "payments_against_invoice",
+   "fieldtype": "Link",
+   "label": "\u0645\u0642\u0627\u0628\u0644 \u0633\u0646\u062f \u0642\u0628\u0636",
+   "no_copy": 1,
+   "options": "Payment Entry",
+   "search_index": 1
+  },
+  {
+   "fieldname": "date_of_endorsement",
+   "fieldtype": "Date",
+   "label": "\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0638\u0647\u064a\u0631"
+  },
+  {
+   "fieldname": "payment_voucher",
+   "fieldtype": "Link",
+   "label": "\u0645\u0642\u0627\u0628\u0644 \u0633\u0646\u062f \u062f\u0641\u0639",
+   "no_copy": 1,
+   "options": "Payment Entry",
+   "print_hide": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "installment_payment_supplier",
+   "fieldtype": "Table",
+   "label": "\u062a\u0642\u0633\u064a\u0637 \u0644\u0644\u0645\u0648\u0631\u062f \u0641\u064a \u062d\u0627\u0644\u0629 \u0627\u0644\u0631\u062c\u0648\u0639",
+   "options": "installment"
+  },
+  {
+   "fieldname": "remaining_amount_for_supplier",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062a\u0628\u0642\u064a \u0644\u0644\u0645\u0648\u0631\u062f",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remaining_amount_for_customer",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062a\u0628\u0642\u064a \u0639\u0644\u0649 \u0627\u0644\u0639\u0645\u064a\u0644"
+  },
+  {
+   "fieldname": "installment_payment_customer",
+   "fieldtype": "Table",
+   "label": "\u062a\u0642\u0633\u064a\u0637 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644",
+   "options": "installment"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "supplier_details",
+   "fieldtype": "Section Break",
+   "label": "\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0645\u0648\u0631\u062f \u0627\u0644\u0645\u0638\u0647\u0631 \u0644\u0647 \u0627\u0644\u0634\u064a\u0643"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "installment_payment_customer_section",
+   "fieldtype": "Section Break",
+   "label": "\u0627\u0642\u0633\u0627\u0637 \u0627\u0644\u0634\u064a\u0643 \u0645\u0646 \u0627\u0644\u0639\u0645\u064a\u0644 \u0641\u064a \u062d\u0627\u0644\u0629 \u0627\u0644\u0631\u062c\u0648\u0639"
+  },
+  {
+   "fieldname": "image_check",
+   "fieldtype": "Attach Image",
+   "label": "\u0635\u0648\u0631\u0629 \u0627\u0644\u0634\u064a\u0643"
+  },
+  {
+   "bold": 1,
+   "default": "ACC-CHK-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "ACC-CHK-.YYYY.-",
+   "print_hide": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "number_check",
+   "fieldtype": "Int",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "\u0631\u0642\u0645 \u0627\u0644\u0634\u064a\u0643"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-06-03 23:25:03.708265",
+ "modified_by": "Administrator",
+ "module": "Accounts",
+ "name": "check",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "show_name_in_global_search": 1,
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "customer",
+ "track_changes": 1
+}

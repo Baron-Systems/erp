@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="color-scheme" content="light">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ABS Portal">
+    <meta name="description" content="بوابة عملاء Al Baron Systems - تسجيل الدخول الآمن">
+    <meta name="format-detection" content="telephone=no">
+    <title>بوابة العملاء - ABS</title>
+    <link rel="stylesheet" href="/portal/style.css?v=6">
+    <link rel="manifest" href="/api/method/erpnext.www.portal.api.get_manifest">
+    <link rel="apple-touch-icon" href="/portal/icon-192.png">
+    <!-- Dark Theme -->
+    <style>
+        :root { color-scheme: dark; }
+    </style>
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body class="login-body">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="page-loader-logo">ABS</div>
+        <div class="spinner" style="width: 32px; height: 32px; color: var(--primary-500);"></div>
+    </div>
+
+    <!-- Login Page -->
+    <div class="login-page">
+        <!-- Background Decorations -->
+        <div class="login-bg-decoration"></div>
+        
+        <!-- Brand Header -->
+        <div class="login-brand">
+            <div class="login-brand-logo">
+                <img src="/portal/logo.png" alt="ABS" style="width: 70%; height: 70%; object-fit: contain;">
+            </div>
+            <h1 class="login-brand-title">Al Baron Systems</h1>
+            <p class="login-brand-subtitle">بوابة العملاء الذكية</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="login-container">
+            <div class="login-card">
+                <h2 class="login-title">تسجيل الدخول</h2>
+                <p class="login-subtitle">أدخل بياناتك للوصول إلى حسابك</p>
+
+                <form id="loginForm">
+                    <!-- Name Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="customer_name">الاسم</label>
+                        <div class="input-group">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="customer_name" 
+                                name="customer_name" 
+                                class="form-input form-input-lg" 
+                                placeholder="أدخل الاسم الأول"
+                                required
+                                autocomplete="off"
+                                autofocus
+                                aria-label="الاسم الأول"
+                            >
+                        </div>
+                        <p class="text-sm text-muted mt-2">يكفي إدخال الاسم الأول فقط</p>
+                    </div>
+
+                    <!-- ID Number Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_no">رقم العميل</label>
+                        <div class="input-group">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                                <path d="M8 9h8M8 13h5"></path>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="id_no" 
+                                name="id_no" 
+                                class="form-input form-input-lg" 
+                                placeholder="أدخل رقم العميل"
+                                required
+                                autocomplete="off"
+                                inputmode="numeric"
+                                aria-label="رقم العميل"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Alert Container -->
+                    <div id="alertContainer"></div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-lg btn-block mt-6" id="submitBtn">
+                        <span id="btnText">الدخول للبوابة</span>
+                        <span id="btnLoading" style="display: none;">
+                            <span class="spinner" style="width: 20px; height: 20px;"></span>
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Static Install App Button -->
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-outline btn-sm" id="staticInstallBtn" onclick="showInstallPrompt()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 6px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        تثبيت التطبيق
+                    </button>
+                </div>
+
+                <!-- Help Text -->
+                <p class="text-center text-sm text-muted mt-4">
+                    تواصل معنا للحصول على بيانات الدخول
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-prompt-header">
+            <div class="install-prompt-icon">ABS</div>
+            <div class="install-prompt-text">
+                <div class="install-prompt-title">تثبيت التطبيق</div>
+                <div class="install-prompt-desc">احصل على تجربة أفضل مع تطبيق ABS</div>
+            </div>
+            <button class="install-prompt-close" id="closeInstallPrompt">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="install-prompt-actions">
+            <button class="install-prompt-btn later" id="dismissInstall">لاحقاً</button>
+            <button class="install-prompt-btn install" id="acceptInstall">تثبيت</button>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="/portal/common.js?v=4"></script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/portal/service-worker.js?v=4')
+                .then(reg => console.log('[SW] Registered'))
+                .catch(err => console.log('[SW] Error:', err));
+        }
+
+        // Hide page loader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('pageLoader').classList.add('hidden');
+            }, 500);
+        });
+
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check if user just logged out
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('logout') === '1') {
+                showToast('تم تسجيل الخروج بنجاح', 'info');
+                return;
+            }
+            
+            // Check auth status
+            const me = await apiCall('portal_me', {}, false);
+            if (me && me.success) {
+                window.location.href = '/portal';
+                return;
+            }
+
+            // Prefill from query params
+            const params = new URLSearchParams(window.location.search);
+            const qpId = params.get('id_no');
+            const qpName = params.get('customer_name');
+            if (qpId) document.getElementById('id_no').value = qpId;
+            if (qpName) document.getElementById('customer_name').value = qpName;
+            if (qpId && qpName) {
+                setTimeout(() => document.getElementById('loginForm').requestSubmit(), 100);
+            }
+
+            // Show install prompt after delay
+            setTimeout(showInstallPrompt, 3000);
+        });
+
+        // Install Prompt Logic
+        let deferredPrompt = null;
+        const installPrompt = document.getElementById('installPrompt');
+        const dismissInstall = document.getElementById('dismissInstall');
+        const acceptInstall = document.getElementById('acceptInstall');
+        const closeInstallPrompt = document.getElementById('closeInstallPrompt');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        function showInstallPrompt() {
+            // Check if dismissed recently
+            const dismissed = localStorage.getItem('installPromptDismissed');
+            const dismissedTime = dismissed ? parseInt(dismissed) : 0;
+            const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
+            
+            // Don't show if dismissed within 7 days
+            if (dismissed && daysSinceDismissed < 7) return;
+            
+            // Don't show if already installed
+            if (window.matchMedia('(display-mode: standalone)').matches) return;
+            
+            installPrompt.classList.add('show');
+        }
+
+        function hideInstallPrompt(savePreference = false) {
+            installPrompt.classList.remove('show');
+            if (savePreference) {
+                localStorage.setItem('installPromptDismissed', Date.now().toString());
+            }
+        }
+
+        dismissInstall.addEventListener('click', () => hideInstallPrompt(true));
+        closeInstallPrompt.addEventListener('click', () => hideInstallPrompt(true));
+
+        acceptInstall.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast('تم تثبيت التطبيق بنجاح!', 'success');
+                }
+                deferredPrompt = null;
+            } else {
+                // Show manual instructions
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                const isAndroid = /Android/i.test(navigator.userAgent);
+                
+                if (isIOS) {
+                    showToast('اضغط زر المشاركة ثم "إضافة للشاشة الرئيسية"', 'info');
+                } else if (isAndroid) {
+                    showToast('اضغط النقاط الثلاث ⋮ ثم "إضافة للشاشة الرئيسية"', 'info');
+                }
+            }
+            hideInstallPrompt();
+        });
+
+        // Form submission
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnLoading = document.getElementById('btnLoading');
+        const alertContainer = document.getElementById('alertContainer');
+
+        function showAlert(message, type) {
+            const colors = {
+                error: '#ef4444',
+                success: '#10b981',
+                warning: '#f59e0b'
+            };
+            alertContainer.innerHTML = `
+                <div style="background: ${colors[type] || colors.error}15; color: ${colors[type] || colors.error}; padding: 12px 16px; border-radius: 12px; margin-top: 16px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                    <span>${type === 'success' ? '✓' : type === 'warning' ? '!' : '✕'}</span>
+                    ${message}
+                </div>
+            `;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alertContainer.innerHTML = '';
+
+            const id_no = document.getElementById('id_no').value.trim();
+            const customer_name = document.getElementById('customer_name').value.trim();
+
+            if (!id_no || !customer_name) {
+                showAlert('الرجاء إدخال جميع البيانات المطلوبة', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'flex';
+
+            try {
+                const result = await apiCall('verify_customer', {
+                    id_no: id_no,
+                    customer_name: customer_name
+                }, false);
+
+                if (result.success) {
+                    showAlert(`مرحباً ${result.customer_name}!`, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/portal';
+                    }, 1000);
+                } else {
+                    showAlert(result.message || 'فشل التحقق من البيانات', 'error');
+                    submitBtn.disabled = false;
+                    btnText.style.display = 'block';
+                    btnLoading.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('حدث خطأ أثناء التحقق، الرجاء المحاولة مرة أخرى', 'error');
+                submitBtn.disabled = false;
+                btnText.style.display = 'block';
+                btnLoading.style.display = 'none';
+            }
+        });
+
+        // Haptic feedback on button press (if supported)
+        submitBtn.addEventListener('touchstart', () => {
+            if (navigator.vibrate) navigator.vibrate(10);
+        });
+    </script>
+</body>
+</html>
+
