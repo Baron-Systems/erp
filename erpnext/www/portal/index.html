@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="بوابة العملاء - متابعة الفواتير والأرصدة والمدفوعات">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="البوابة">
+    <title>لوحة التحكم المالي - بوابة العملاء</title>
+    <link rel="stylesheet" href="/portal/style.css?v=2">
+    <link rel="manifest" href="/api/method/erpnext.www.portal.api.get_manifest">
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+        }
+        
+        .header-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.875rem;
+        }
+        
+        .filter-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (min-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 1.5rem;
+            }
+        }
+        
+        .balance-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .balance-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .balance-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .balance-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .detail-item {
+            text-align: center;
+        }
+        
+        .detail-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .detail-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        
+        .summary-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .summary-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .transactions-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-header {
+            background: #f8fafc;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .table-container {
+                max-height: 350px;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            th, td {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            
+            table {
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .table-container {
+                max-height: 300px;
+            }
+            
+            th, td {
+                padding: 0.4rem;
+                font-size: 0.7rem;
+            }
+            
+            /* إخفاء بعض الأعمدة على الشاشات الصغيرة */
+            th:nth-child(5),
+            td:nth-child(5) {
+                display: none;
+            }
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f8fafc;
+            padding: 0.75rem;
+            text-align: right;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.875rem;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        .transaction-type {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .type-invoice {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .type-payment {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-unpaid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-partial {
+            background: #fed7aa;
+            color: #92400e;
+        }
+        
+        .amount {
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+        
+        .expandable-icon {
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 0.8rem;
+            color: #64748b;
+            transition: transform 0.2s ease;
+        }
+        
+        .expandable-icon:hover {
+            color: #1e3a8a;
+        }
+        
+        .invoice-details {
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 200px;
+            }
+        }
+        
+        .invoice-details-row:hover {
+            background: transparent !important;
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .skeleton-card {
+            height: 120px;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .skeleton-row {
+            height: 40px;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1rem 0;
+                margin-bottom: 1rem;
+            }
+            
+            .header-filters {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-actions {
+                flex-direction: column;
+            }
+            
+            .table-container {
+                max-height: 300px;
+            }
+            
+            th, td {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .balance-amount {
+                font-size: 1.5rem;
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-header {
+                padding: 0.75rem 0;
+            }
+            
+            .balance-card {
+                padding: 1rem;
+            }
+            
+            .balance-amount {
+                font-size: 1.25rem;
+            }
+            
+            .summary-card {
+                padding: 1rem;
+            }
+            
+            .table-container {
+                max-height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+    <!-- App Bar (Mobile) - Al Baron Brand -->
+    <div class="appbar">
+        <div class="container">
+            <div class="appbar-inner">
+                <a class="appbar-title" href="/portal">لوحة التحكم</a>
+                <div class="appbar-actions">
+                    <button id="installBtn" class="install-btn hidden" onclick="installApp()" aria-label="تحميل التطبيق">⬇️ حمل التطبيق</button>
+                    <button class="btn btn-outline btn-icon" onclick="logout(); return false;" aria-label="تسجيل خروج">⎋</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/portal" class="navbar-brand">
+                    <span style="font-weight:800; color:var(--primary-color);">ABS</span>
+                    <span>لوحة التحكم</span>
+                </a>
+                
+                <button class="mobile-menu-btn">☰</button>
+                
+                <ul class="navbar-menu">
+                    <li><a href="/portal" class="active">لوحة التحكم</a></li>
+                    <li><a href="#" onclick="logout(); return false;">تسجيل خروج</a></li>
+                </ul>
+                
+                <!-- زر تحميل التطبيق -->
+                <button id="installBtn" class="install-btn hidden" onclick="installApp()" style="margin-right: 1rem;">
+                    <span>⬇️</span>
+                    <span>حمل التطبيق</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Dashboard Header with Filters -->
+            <div class="dashboard-header">
+                <div class="container">
+                    <h2 style="text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem;">لوحة التحكم المالي</h2>
+                    
+                    <div class="header-filters">
+                        <div class="filter-group">
+                            <label>من تاريخ</label>
+                            <input type="date" id="fromDate" class="form-input">
+                        </div>
+                        <div class="filter-group">
+                            <label>إلى تاريخ</label>
+                            <input type="date" id="toDate" class="form-input">
+                        </div>
+                        <div class="filter-group">
+                            <label>نوع المعاملة</label>
+                            <select id="transactionType" class="form-input">
+                                <option value="">الكل</option>
+                                <option value="invoice">فاتورة فقط</option>
+                                <option value="payment">دفع فقط</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>حالة الفاتورة</label>
+                            <select id="invoiceStatus" class="form-input">
+                                <option value="">الكل</option>
+                                <option value="Paid">مدفوعة</option>
+                                <option value="Unpaid">غير مدفوعة</option>
+                                <option value="Partially Paid">مدفوعة جزئياً</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i>
+                            تطبيق الفلاتر
+                        </button>
+                        <button class="btn btn-outline" onclick="resetFilters()">
+                            <i class="fas fa-refresh"></i>
+                            إعادة تعيين
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="dashboard-cards" id="dashboardCards">
+                <!-- Balance Card -->
+                <div class="balance-card" id="balanceCard" style="display: none;">
+                    <div class="balance-amount" id="balanceAmount">0</div>
+                    <div class="balance-label">رصيدك الحالي</div>
+                    <div class="balance-details">
+                        <div class="detail-item">
+                            <div class="detail-value" id="creditLimit">0</div>
+                            <div class="detail-label">حد الائتمان</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-value" id="outstandingAmount">0</div>
+                            <div class="detail-label">الديون المستحقة</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-card" id="summaryCard" style="display: none;">
+                    <div class="summary-title">
+                        <i class="fas fa-chart-line"></i>
+                        ملخص المعاملات
+                    </div>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalInvoices">0</div>
+                            <div class="stat-label">عدد الفواتير</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="paidInvoices">0</div>
+                            <div class="stat-label">الفواتير المدفوعة</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="outstandingInvoices">0</div>
+                            <div class="stat-label">الفواتير المستحقة</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalPayments">0</div>
+                            <div class="stat-label">إجمالي المدفوعات</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="transactions-table" id="transactionsTable" style="display: none;">
+                <div class="table-header">
+                    <div class="table-title">
+                        <i class="fas fa-list"></i>
+                        سجل المعاملات المالية
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>النوع</th>
+                                <th>الوصف</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                                <th>المتبقي</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsBody">
+                            <!-- Transactions will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" style="display: none;">
+                <div class="skeleton-card loading-skeleton"></div>
+                <div class="skeleton-card loading-skeleton"></div>
+                <div class="skeleton-card loading-skeleton"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" style="display: none; text-align: center; padding: 3rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                <h3 style="color: #64748b; margin-bottom: 0.5rem;">لا توجد بيانات مالية</h3>
+                <p style="color: #94a3b8;">لم يتم العثور على معاملات مالية في الفترة المحددة</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" style="display: none; text-align: center; padding: 3rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                <h3 style="color: #dc2626; margin-bottom: 0.5rem;">حدث خطأ</h3>
+                <p style="color: #94a3b8;">لم يتم تحميل البيانات المالية، يرجى المحاولة مرة أخرى</p>
+                <button class="btn btn-primary" onclick="loadDashboard()" style="margin-top: 1rem;">
+                    <i class="fas fa-refresh"></i>
+                    إعادة المحاولة
+                </button>
+            </div>
+        </div>
+    </main>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="/portal/common.js"></script>
+    <script>
+        // Override formatDate to ensure numbers-only format
+        function formatDate(dateStr) {
+            // If dateStr is already in YYYY-MM-DD format, return it as is
+            if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                return dateStr;
+            }
+            
+            // Handle date objects or other formats
+            const date = new Date(dateStr);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Page State
+        let currentFilters = {
+            from_date: '',
+            to_date: '',
+            transaction_type: '',
+            invoice_status: ''
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setDefaultDates();
+            loadDashboard();
+        });
+
+        // Set default dates (current month)
+        function setDefaultDates() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            document.getElementById('fromDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
+        }
+
+        // Load Dashboard Data
+        async function loadDashboard() {
+            showLoading();
+            
+            try {
+                const result = await apiCall('get_financial_dashboard', currentFilters);
+                
+                if (result.success) {
+                    displayDashboard(result);
+                } else {
+                    showError(result.message || 'حدث خطأ أثناء تحميل البيانات');
+                }
+            } catch (error) {
+                console.error('Dashboard Error:', error);
+                showError('فشل الاتصال بالخادم');
+            }
+        }
+
+        // Display Dashboard
+        function displayDashboard(data) {
+            hideLoading();
+            
+            // Update balance card
+            updateBalanceCard(data);
+            
+            // Update summary card
+            updateSummaryCard(data);
+            
+            // Update transactions table
+            updateTransactionsTable(data.transactions || []);
+            
+            // Show all sections
+            document.getElementById('balanceCard').style.display = 'block';
+            document.getElementById('summaryCard').style.display = 'block';
+            document.getElementById('transactionsTable').style.display = 'block';
+        }
+
+        // Update Balance Card
+        function updateBalanceCard(data) {
+            const currency = data.currency || 'SAR';
+            document.getElementById('balanceAmount').textContent = formatCurrency(data.balance || 0, currency);
+            document.getElementById('creditLimit').textContent = formatCurrency(data.credit_limit || 0, currency);
+            document.getElementById('outstandingAmount').textContent = formatCurrency(data.outstanding_amount || 0, currency);
+        }
+
+        // Update Summary Card
+        function updateSummaryCard(data) {
+            const currency = data.currency || 'SAR';
+            // Show count of invoices (not the amount)
+            document.getElementById('totalInvoices').textContent = data.total_invoices || '0';
+            document.getElementById('paidInvoices').textContent = formatCurrency(data.paid_invoices || 0, currency);
+            document.getElementById('outstandingInvoices').textContent = formatCurrency(data.outstanding_invoices || 0, currency);
+            document.getElementById('totalPayments').textContent = formatCurrency(data.total_payments || 0, currency);
+        }
+
+        // Update Transactions Table
+        function updateTransactionsTable(transactions) {
+            const tbody = document.getElementById('transactionsBody');
+            tbody.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
+                            لا توجد معاملات في هذه الفترة
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                
+                // Add expandable icon for invoices
+                const expandIcon = transaction.type === 'invoice' ? 
+                    '<span class="expandable-icon">▼</span>' : '';
+                
+                row.innerHTML = `
+                    <td>${formatDate(transaction.date)}${expandIcon}</td>
+                    <td>
+                        <span class="transaction-type ${transaction.type === 'invoice' ? 'type-invoice' : 'type-payment'}">
+                            ${transaction.type === 'invoice' ? 'فاتورة' : 'دفع'}
+                        </span>
+                    </td>
+                    <td>${transaction.description}</td>
+                    <td class="amount">${formatCurrency(transaction.amount, transaction.currency)}</td>
+                    <td>
+                        <span class="status-badge ${getStatusClass(transaction.status)}">
+                            ${getStatusLabel(transaction.status)}
+                        </span>
+                    </td>
+                    <td class="amount">${formatCurrency(transaction.outstanding || 0, transaction.currency)}</td>
+                `;
+                
+                // Add click handler for invoice details
+                if (transaction.type === 'invoice') {
+                    row.style.cursor = 'pointer';
+                    row.addEventListener('click', (e) => {
+                        // Don't toggle if clicking on other elements
+                        if (e.target.tagName !== 'TD' && !e.target.closest('.transaction-type') && !e.target.closest('.status-badge')) {
+                            return;
+                        }
+                        toggleInvoiceDetails(row, transaction);
+                    });
+                }
+                
+                tbody.appendChild(row);
+                
+                // Add details row for invoices
+                if (transaction.type === 'invoice') {
+                    const detailsRow = document.createElement('tr');
+                    detailsRow.innerHTML = `
+                        <td colspan="6" style="padding: 0; border: none;">
+                            <div class="invoice-details" style="display: none; padding: 1rem; background: #f8fafc; border-left: 3px solid #1e3a8a;">
+                                <div style="font-weight: 600; margin-bottom: 0.5rem;">الأصناف:</div>
+                                <div id="invoice-items-${transaction.description.split('#')[1]}" style="margin-bottom: 1rem;">
+                                    <div style="text-align: center; padding: 1rem; color: #64748b;">
+                                        <div class="spinner-border spinner-border-sm" role="status">
+                                            <span class="sr-only">Loading...</span>
+                                        </div>
+                                        جاري تحميل الأصناف...
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    detailsRow.className = 'invoice-details-row';
+                    tbody.appendChild(detailsRow);
+                }
+            });
+        }
+
+        // Get status class
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Paid': return 'status-paid';
+                case 'Unpaid': return 'status-unpaid';
+                case 'Partially Paid': return 'status-partial';
+                default: return 'status-unpaid';
+            }
+        }
+
+        // Get status label
+        function getStatusLabel(status) {
+            switch (status) {
+                case 'Paid': return 'مدفوعة';
+                case 'Unpaid': return 'غير مدفوعة';
+                case 'Partially Paid': return 'مدفوعة جزئياً';
+                case 'Overdue': return 'متأخرة';
+                case 'Submitted': return 'مقدمة';
+                case 'Draft': return 'مسودة';
+                case 'Cancelled': return 'ملغاة';
+                case 'Consolidated': return 'موحدة';
+                default: return status;
+            }
+        }
+
+        // Toggle invoice details
+        function toggleInvoiceDetails(row, transaction) {
+            const nextRow = row.nextElementSibling;
+            const expandIcon = row.querySelector('.expandable-icon');
+            
+            if (nextRow && nextRow.classList.contains('invoice-details-row')) {
+                const detailsDiv = nextRow.querySelector('.invoice-details');
+                if (detailsDiv.style.display === 'none') {
+                    detailsDiv.style.display = 'block';
+                    expandIcon.textContent = '▲';
+                    expandIcon.style.transform = 'rotate(0deg)';
+                    
+                    // Load invoice items only when expanded
+                    const invoiceNumber = transaction.description.split('#')[1];
+                    const itemsContainer = document.getElementById(`invoice-items-${invoiceNumber}`);
+                    if (itemsContainer && itemsContainer.innerHTML.includes('جاري تحميل الأصناف')) {
+                        loadInvoiceItems(invoiceNumber);
+                    }
+                } else {
+                    detailsDiv.style.display = 'none';
+                    expandIcon.textContent = '▼';
+                    expandIcon.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
+        // View full invoice
+        function viewFullInvoice(invoiceNumber) {
+            window.open(`/portal/invoice.html?name=${invoiceNumber}`, '_blank');
+        }
+
+        // Load invoice items
+        async function loadInvoiceItems(invoiceNumber) {
+            try {
+                const result = await apiCall('get_invoice_details', { invoice_name: invoiceNumber });
+                const itemsContainer = document.getElementById(`invoice-items-${invoiceNumber}`);
+                
+                if (result.success && result.invoice && result.invoice.items) {
+                    displayInvoiceItems(itemsContainer, result.invoice.items, result.invoice.currency);
+                } else {
+                    itemsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 1rem; color: #dc3545;">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚠️</div>
+                            <div>لم يتم العثور على أصناف لهذه الفاتورة</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading invoice items:', error);
+                const itemsContainer = document.getElementById(`invoice-items-${invoiceNumber}`);
+                itemsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; color: #dc3545;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">❌</div>
+                        <div>حدث خطأ أثناء تحميل الأصناف</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Display invoice items
+        function displayInvoiceItems(container, items, currency = 'SAR') {
+            if (!items || items.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; color: #64748b;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📦</div>
+                        <div>لا توجد أصناف في هذه الفاتورة</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let itemsHtml = `
+                <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem; padding: 0.75rem; background: #f1f5f9; font-weight: 600; border-bottom: 1px solid #e2e8f0;">
+                        <div>الصنف</div>
+                        <div style="text-align: center;">الكمية</div>
+                        <div style="text-align: center;">السعر</div>
+                        <div style="text-align: center;">الإجمالي</div>
+                    </div>
+            `;
+
+            items.forEach(item => {
+                itemsHtml += `
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid #f1f5f9; align-items: center;">
+                        <div>
+                            <div style="font-weight: 500; color: #1e293b;">${item.item_name}</div>
+                            <div style="font-size: 0.875rem; color: #64748b;">${item.item_code}</div>
+                        </div>
+                        <div style="text-align: center;">${item.qty}</div>
+                        <div style="text-align: center;">${formatCurrency(item.rate, currency)}</div>
+                        <div style="text-align: center; font-weight: 600; color: #1e3a8a;">${formatCurrency(item.amount, currency)}</div>
+                    </div>
+                `;
+            });
+
+            itemsHtml += '</div>';
+            container.innerHTML = itemsHtml;
+        }
+
+        // Show Invoice Details (Mobile)
+        function showInvoiceDetails(transaction) {
+            if (window.innerWidth <= 768) {
+                const details = `
+                    التاريخ: ${formatDate(transaction.date)}
+                    النوع: فاتورة
+                    الوصف: ${transaction.description}
+                    المبلغ: ${formatCurrency(transaction.amount)}
+                    الحالة: ${getStatusLabel(transaction.status)}
+                    المتبقي: ${formatCurrency(transaction.outstanding || 0)}
+                `;
+                
+                alert(details);
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try { 
+                await apiCall('portal_logout', {}, false); 
+            } catch (e) {}
+            window.location.href = '/portal/verify';
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            currentFilters = {
+                from_date: document.getElementById('fromDate').value,
+                to_date: document.getElementById('toDate').value,
+                transaction_type: document.getElementById('transactionType').value,
+                invoice_status: document.getElementById('invoiceStatus').value
+            };
+            loadDashboard();
+        }
+
+        // Reset Filters
+        function resetFilters() {
+            setDefaultDates();
+            document.getElementById('transactionType').value = '';
+            document.getElementById('invoiceStatus').value = '';
+            currentFilters = {
+                from_date: '',
+                to_date: '',
+                transaction_type: '',
+                invoice_status: ''
+            };
+            loadDashboard();
+        }
+
+        // Loading States
+        function showLoading() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('balanceCard').style.display = 'none';
+            document.getElementById('summaryCard').style.display = 'none';
+            document.getElementById('transactionsTable').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingState').style.display = 'none';
+        }
+
+        function showError(message) {
+            hideLoading();
+            document.getElementById('balanceCard').style.display = 'none';
+            document.getElementById('summaryCard').style.display = 'none';
+            document.getElementById('transactionsTable').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            
+            const errorText = document.querySelector('#errorState p');
+            if (errorText) {
+                errorText.textContent = message;
+            }
+        }
+
+        // ============== PWA Installation ==============
+        let deferredPrompt = null;
+
+        // استمع لحدث beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // أظهر الزر
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.classList.remove('hidden');
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showSuccess('تم تحميل التطبيق بنجاح! يمكنك الآن استخدامه بدون إنترنت.');
+                    } else {
+                        console.log('المستخدم رفض التثبيت');
+                    }
+                    deferredPrompt = null;
+                    const installBtn = document.getElementById('installBtn');
+                    if (installBtn) {
+                        installBtn.classList.add('hidden');
+                    }
+                });
+            }
+        }
+
+        // تسجيل Service Worker للـ PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/portal/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker تم تسجيله بنجاح');
+                    })
+                    .catch(error => {
+                        console.error('❌ فشل تسجيل Service Worker:', error);
+                    });
+            });
+        }
+
+        // استدعاء appInstalled إذا تم تثبيت التطبيق
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ تم تثبيت التطبيق بنجاح');
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.classList.add('hidden');
+            }
+        });
+
+        // إخفاء الزر عند التحميل إذا لم يكن هناك دعم للتثبيت
+        window.addEventListener('load', () => {
+            // إذا كان على تطبيق أو لم يتم دعم PWA، إخفاء الزر
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                const installBtn = document.getElementById('installBtn');
+                if (installBtn) {
+                    installBtn.classList.add('hidden');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

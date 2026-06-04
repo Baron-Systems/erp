@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ABS Portal">
+    <meta name="description" content="بوابة عملاء Al Baron Systems - تسجيل الدخول">
+    <title>تسجيل الدخول - بوابة العملاء</title>
+    <link rel="stylesheet" href="/portal/style.css?v=2">
+    <link rel="manifest" href="/api/method/erpnext.www.portal.api.get_manifest">
+    <link rel="apple-touch-icon" href="/portal/icon-192.png">
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-card">
+                <!-- Brand Header -->
+                <div class="brand-header">
+                    <div class="brand-logo">ABS</div>
+                    <h1 class="brand-title">Al Baron Systems</h1>
+                    <p class="brand-subtitle">شريكك في التحول الرقمي</p>
+                </div>
+
+                <!-- Login Form -->
+                <h2 class="login-title">بوابة العملاء</h2>
+                <p class="login-subtitle">أدخل بياناتك للوصول إلى حسابك</p>
+
+                <form id="loginForm">
+                    <!-- الاسم أولاً -->
+                    <div class="form-group">
+                        <label class="form-label" for="customer_name">الاسم</label>
+                        <input 
+                            type="text" 
+                            id="customer_name" 
+                            name="customer_name" 
+                            class="form-input" 
+                            placeholder="أدخل الاسم الأول"
+                            required
+                            autocomplete="off"
+                            autofocus
+                            aria-label="الاسم الأول"
+                        >
+                        <p class="form-hint">يكفي إدخال الاسم الأول فقط</p>
+                    </div>
+
+                    <!-- رقم العميل ثانياً -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_no">رقم العميل</label>
+                        <input 
+                            type="text" 
+                            id="id_no" 
+                            name="id_no" 
+                            class="form-input" 
+                            placeholder="أدخل رقم العميل"
+                            required
+                            autocomplete="off"
+                            inputmode="numeric"
+                            aria-label="رقم العميل"
+                        >
+                    </div>
+
+                    <div id="alertContainer"></div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span id="btnText">الدخول للبوابة</span>
+                        <span id="btnLoading" style="display: none;">
+                            <span class="spinner"></span>
+                        </span>
+                    </button>
+                </form>
+
+                <!-- PWA Install Section -->
+                <div class="install-section" id="installSection" style="display: none;">
+                    <button id="installBtn" class="install-btn" style="display: none;">
+                        <span>📲</span>
+                        <span>تثبيت التطبيق</span>
+                    </button>
+
+                    <div id="iosInstructions" class="ios-instructions" style="display: none;">
+                        <p>📱 أضف للشاشة الرئيسية</p>
+                        <div class="steps" id="installSteps">
+                            اضغط على زر المشاركة <span style="font-size:1.2em">⎋</span> في Safari<br>
+                            ثم اختر "إضافة إلى الشاشة الرئيسية"
+                        </div>
+                        <button onclick="showAndroidInstallInstructions()" style="margin-top: 10px; padding: 8px 16px; background: #1e3a8a; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            طريقة التثبيت على Chrome
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/portal/common.js"></script>
+    <script src="/portal/install-prompt.js"></script>
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/portal/service-worker.js')
+                .then(reg => console.log('[SW] Registered'))
+                .catch(err => console.log('[SW] Error:', err));
+        }
+
+        // Function to show Android install instructions
+        function showAndroidInstallInstructions() {
+            const steps = document.getElementById('installSteps');
+            if (steps) {
+                steps.innerHTML = 'اضغط على النقاط الثلاث ⋮ في Chrome<br>ثم اختر "إضافة إلى الشاشة الرئيسية" أو "Install app"';
+            }
+            alert('لتثبيت التطبيق:\n1. اضغط على النقاط الثلاث (⋮) في أعلى Chrome\n2. اختر "إضافة إلى الشاشة الرئيسية" أو "Install app"');
+        }
+
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check if user just logged out - prevent auto redirect
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('logout') === '1') {
+                // User just logged out, don't auto-redirect
+                return;
+            }
+            
+            const me = await apiCall('portal_me', {}, false);
+            if (me && me.success) {
+                window.location.href = '/portal';
+            }
+
+            // Prefill from query params
+            const params = new URLSearchParams(window.location.search);
+            const qpId = params.get('id_no');
+            const qpName = params.get('customer_name');
+            if (qpId) document.getElementById('id_no').value = qpId;
+            if (qpName) document.getElementById('customer_name').value = qpName;
+            if (qpId && qpName) {
+                setTimeout(() => document.getElementById('loginForm').requestSubmit(), 100);
+            }
+        });
+
+        // Form submission
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnLoading = document.getElementById('btnLoading');
+        const alertContainer = document.getElementById('alertContainer');
+
+        function showAlert(message, type) {
+            alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alertContainer.innerHTML = '';
+
+            const id_no = document.getElementById('id_no').value.trim();
+            const customer_name = document.getElementById('customer_name').value.trim();
+
+            if (!id_no || !customer_name) {
+                showAlert('الرجاء إدخال جميع البيانات المطلوبة', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+
+            try {
+                const result = await apiCall('verify_customer', {
+                    id_no: id_no,
+                    customer_name: customer_name
+                }, false);
+
+                if (result.success) {
+                    showAlert(`مرحباً ${result.customer_name}! جاري التحويل...`, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/portal';
+                    }, 800);
+                } else {
+                    showAlert(result.message || 'فشل التحقق من البيانات', 'error');
+                    submitBtn.disabled = false;
+                    btnText.style.display = 'inline-block';
+                    btnLoading.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('حدث خطأ أثناء التحقق، الرجاء المحاولة مرة أخرى', 'error');
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline-block';
+                btnLoading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+
