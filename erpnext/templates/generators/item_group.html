@@ -1,0 +1,53 @@
+{% block header_actions %}
+{% include 'templates/includes/product_search_box.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="item-group-content">
+	<div>
+		{% if slideshow %}<!-- slideshow -->
+		{% include "templates/includes/slideshow.html" %}
+		{% endif %}
+		{% if description %}<!-- description -->
+		<div itemprop="description">{{ description or ""}}</div>
+		{% endif %}
+	</div>
+	<div>
+		{% if items %}
+		<div id="search-list" class="row">
+			{% for item in items %}
+				{{ item }}
+			{% endfor %}
+		</div>
+			{% if (items|length)==100 %}
+				<div class="text-muted info">Showing top 100 items.</div>
+			{% endif %}
+		{% else %}
+			<div class="text-muted">No items listed.</div>
+		{% endif %}
+	</div>
+</div>
+<script>
+$(function() {
+	if(window.logged_in && getCookie("system_user")==="yes") {
+		frappe.has_permission("Item Group", "{{ name }}", "write", function(r) {
+			frappe.require("/assets/frappe/js/frappe/website/editable.js");
+			frappe.make_editable($('[itemprop="description"]'), "Item Group", "{{ name }}", "description");
+		});
+	}
+});
+</script>
+
+{% endblock %}
+
+{% block style %}
+<style>
+	.product-image.missing-image {
+		border: 1px dashed {{ theme.border_color or "#d1d8dd" }};
+	}
+
+	.product-image.missing-image .octicon {
+		color: {{ theme.border_color or "#d1d8dd" }};
+	}
+</style>
+{% endblock %}

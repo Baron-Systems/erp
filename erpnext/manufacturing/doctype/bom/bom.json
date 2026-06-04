@@ -1,0 +1,322 @@
+{
+ "allow_copy": 0, 
+ "allow_import": 1, 
+ "allow_rename": 0, 
+ "creation": "2013-01-22 15:11:38", 
+ "docstatus": 0, 
+ "doctype": "DocType", 
+ "document_type": "Master", 
+ "fields": [
+  {
+   "description": "Item to be manufactured or repacked", 
+   "fieldname": "item", 
+   "fieldtype": "Link", 
+   "in_filter": 1, 
+   "in_list_view": 1, 
+   "label": "Item", 
+   "oldfieldname": "item", 
+   "oldfieldtype": "Link", 
+   "options": "Item", 
+   "permlevel": 0, 
+   "reqd": 1, 
+   "search_index": 1
+  }, 
+  {
+   "fieldname": "item_name", 
+   "fieldtype": "Data", 
+   "label": "Item Name", 
+   "permlevel": 0, 
+   "precision": ""
+  }, 
+  {
+   "fieldname": "rm_cost_as_per", 
+   "fieldtype": "Select", 
+   "label": "Rate Of Materials Based On", 
+   "options": "Valuation Rate\nLast Purchase Rate\nPrice List", 
+   "permlevel": 0
+  }, 
+  {
+   "depends_on": "eval:doc.rm_cost_as_per===\"Price List\"", 
+   "fieldname": "buying_price_list", 
+   "fieldtype": "Link", 
+   "label": "Price List", 
+   "options": "Price List", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "cb0", 
+   "fieldtype": "Column Break", 
+   "permlevel": 0
+  }, 
+  {
+   "allow_on_submit": 1, 
+   "default": "1", 
+   "fieldname": "is_active", 
+   "fieldtype": "Check", 
+   "hidden": 0, 
+   "in_list_view": 1, 
+   "label": "Is Active", 
+   "no_copy": 1, 
+   "oldfieldname": "is_active", 
+   "oldfieldtype": "Select", 
+   "permlevel": 0, 
+   "reqd": 0
+  }, 
+  {
+   "allow_on_submit": 1, 
+   "default": "1", 
+   "fieldname": "is_default", 
+   "fieldtype": "Check", 
+   "in_list_view": 1, 
+   "label": "Is Default", 
+   "no_copy": 1, 
+   "oldfieldname": "is_default", 
+   "oldfieldtype": "Check", 
+   "permlevel": 0
+  }, 
+  {
+   "description": "Manage cost of operations", 
+   "fieldname": "with_operations", 
+   "fieldtype": "Check", 
+   "label": "With Operations", 
+   "permlevel": 0
+  }, 
+  {
+   "depends_on": "", 
+   "description": "Specify the operations, operating cost and give a unique Operation no to your operations.", 
+   "fieldname": "operations_section", 
+   "fieldtype": "Section Break", 
+   "label": "Operations", 
+   "oldfieldtype": "Section Break", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "operations", 
+   "fieldtype": "Table", 
+   "in_list_view": 0, 
+   "label": "Operations", 
+   "oldfieldname": "bom_operations", 
+   "oldfieldtype": "Table", 
+   "options": "BOM Operation", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "materials_section", 
+   "fieldtype": "Section Break", 
+   "label": "Materials", 
+   "oldfieldtype": "Section Break", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "items", 
+   "fieldtype": "Table", 
+   "label": "Items", 
+   "oldfieldname": "bom_materials", 
+   "oldfieldtype": "Table", 
+   "options": "BOM Item", 
+   "permlevel": 0
+  }, 
+  {
+   "default": "1", 
+   "description": "Quantity of item obtained after manufacturing / repacking from given quantities of raw materials", 
+   "fieldname": "quantity", 
+   "fieldtype": "Float", 
+   "label": "Quantity", 
+   "oldfieldname": "quantity", 
+   "oldfieldtype": "Currency", 
+   "permlevel": 0, 
+   "reqd": 1
+  }, 
+  {
+   "fieldname": "costing", 
+   "fieldtype": "Section Break", 
+   "label": "Costing", 
+   "oldfieldtype": "Section Break", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "operating_cost", 
+   "fieldtype": "Currency", 
+   "in_list_view": 0, 
+   "label": "Operating Cost", 
+   "options": "Company:company:default_currency", 
+   "permlevel": 0, 
+   "read_only": 1
+  }, 
+  {
+   "fieldname": "raw_material_cost", 
+   "fieldtype": "Currency", 
+   "label": "Raw Material Cost", 
+   "options": "Company:company:default_currency", 
+   "permlevel": 0, 
+   "read_only": 1
+  }, 
+  {
+   "fieldname": "cb1", 
+   "fieldtype": "Column Break", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "total_cost", 
+   "fieldtype": "Currency", 
+   "in_list_view": 1, 
+   "label": "Total Cost", 
+   "options": "Company:company:default_currency", 
+   "permlevel": 0, 
+   "read_only": 1
+  }, 
+  {
+   "fieldname": "more_info_section", 
+   "fieldtype": "Section Break", 
+   "label": "", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "project_name", 
+   "fieldtype": "Link", 
+   "in_filter": 1, 
+   "label": "Project Name", 
+   "oldfieldname": "project_name", 
+   "oldfieldtype": "Link", 
+   "options": "Project", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "company", 
+   "fieldtype": "Link", 
+   "label": "Company", 
+   "options": "Company", 
+   "permlevel": 0, 
+   "precision": ""
+  }, 
+  {
+   "fieldname": "amended_from", 
+   "fieldtype": "Link", 
+   "ignore_user_permissions": 1, 
+   "label": "Amended From", 
+   "no_copy": 1, 
+   "options": "BOM", 
+   "permlevel": 0, 
+   "print_hide": 1, 
+   "read_only": 1
+  }, 
+  {
+   "fieldname": "col_break23", 
+   "fieldtype": "Column Break", 
+   "permlevel": 0
+  }, 
+  {
+   "fieldname": "uom", 
+   "fieldtype": "Link", 
+   "label": "Item UOM", 
+   "options": "UOM", 
+   "permlevel": 0, 
+   "read_only": 1
+  }, 
+  {
+   "fieldname": "section_break_25", 
+   "fieldtype": "Section Break", 
+   "permlevel": 0, 
+   "precision": ""
+  }, 
+  {
+   "fieldname": "description", 
+   "fieldtype": "Small Text", 
+   "in_list_view": 0, 
+   "label": "Item Desription", 
+   "permlevel": 0, 
+   "read_only": 1
+  }, 
+  {
+   "fieldname": "column_break_27", 
+   "fieldtype": "Column Break", 
+   "permlevel": 0, 
+   "precision": ""
+  }, 
+  {
+   "fieldname": "image", 
+   "fieldtype": "Attach", 
+   "label": "Image", 
+   "permlevel": 0, 
+   "precision": ""
+  }, 
+  {
+   "fieldname": "Image_view", 
+   "fieldtype": "Image", 
+   "label": "Image View", 
+   "options": "image", 
+   "permlevel": 0, 
+   "precision": ""
+  }, 
+  {
+   "depends_on": "eval:!doc.__islocal", 
+   "fieldname": "section_break0", 
+   "fieldtype": "Section Break", 
+   "hidden": 0, 
+   "label": "Materials Required (Exploded)", 
+   "permlevel": 0, 
+   "print_hide": 0
+  }, 
+  {
+   "fieldname": "exploded_items", 
+   "fieldtype": "Table", 
+   "hidden": 0, 
+   "label": "Exploded_items", 
+   "no_copy": 1, 
+   "oldfieldname": "flat_bom_details", 
+   "oldfieldtype": "Table", 
+   "options": "BOM Explosion Item", 
+   "permlevel": 0, 
+   "print_hide": 1, 
+   "read_only": 1
+  }
+ ], 
+ "hide_heading": 0, 
+ "hide_toolbar": 0, 
+ "icon": "icon-sitemap", 
+ "idx": 1, 
+ "in_create": 0, 
+ "is_submittable": 1, 
+ "issingle": 0, 
+ "istable": 0, 
+ "modified": "2015-06-26 02:02:30.705279", 
+ "modified_by": "Administrator", 
+ "module": "Manufacturing", 
+ "name": "BOM", 
+ "owner": "Administrator", 
+ "permissions": [
+  {
+   "cancel": 1, 
+   "create": 1, 
+   "delete": 1, 
+   "email": 1, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Manufacturing Manager", 
+   "share": 1, 
+   "submit": 1, 
+   "write": 1
+  }, 
+  {
+   "apply_user_permissions": 1, 
+   "cancel": 1, 
+   "create": 1, 
+   "delete": 1, 
+   "email": 1, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Manufacturing User", 
+   "share": 1, 
+   "submit": 1, 
+   "write": 1
+  }
+ ], 
+ "read_only": 0, 
+ "search_fields": "item", 
+ "sort_field": "modified", 
+ "sort_order": "DESC"
+}
