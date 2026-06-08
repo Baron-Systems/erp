@@ -669,10 +669,14 @@ class Item(Document):
 						item_price.insert(ignore_permissions=True)
 					else:
 						# Update existing Item Price record
-						frappe.db.set_value("Item Price", existing_price, "price_list_rate", row.rate)
-						frappe.db.set_value("Item Price", existing_price, "item_name", self.item_name)
-						frappe.db.set_value("Item Price", existing_price, "item_description", self.description)
-						frappe.db.set_value("Item Price", existing_price, "brand", self.brand)
+						# Use doc.save() instead of db.set_value() to trigger on_update
+						# which syncs the price to table_orim
+						item_price_doc = frappe.get_doc("Item Price", existing_price)
+						item_price_doc.price_list_rate = row.rate
+						item_price_doc.item_name = self.item_name
+						item_price_doc.item_description = self.description
+						item_price_doc.brand = self.brand
+						item_price_doc.save(ignore_permissions=True)
 		
 		# Clean up Item Price records that are no longer in table_prmp
 		self.cleanup_orphaned_item_prices(current_combinations)

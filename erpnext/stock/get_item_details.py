@@ -1110,7 +1110,11 @@ def insert_item_price(ctx: ItemDetailsCtx):
 			not item_price.valid_from or getdate(item_price.valid_from) <= transaction_date
 		) and (not item_price.valid_upto or getdate(item_price.valid_upto) >= transaction_date)
 		if is_price_valid_for_transaction:
-			frappe.db.set_value("Item Price", item_price.name, "price_list_rate", price_list_rate)
+			# Use doc.save() instead of db.set_value() to trigger on_update
+			# which syncs the price to table_orim in Item
+			item_price_doc = frappe.get_doc("Item Price", item_price.name)
+			item_price_doc.price_list_rate = price_list_rate
+			item_price_doc.save()
 			frappe.msgprint(
 				_("Item Price updated for {0} in Price List {1}").format(ctx.item_code, ctx.price_list),
 				alert=True,
