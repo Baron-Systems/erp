@@ -10,11 +10,11 @@
  "label": "CRM",
  "link_to": "CRM",
  "link_type": "Workspace Sidebar",
- "modified": "2026-01-06 14:54:05.112927",
+ "modified": "2026-06-17 21:32:58.867248",
  "modified_by": "Administrator",
  "name": "CRM",
  "owner": "Administrator",
- "parent_icon": "ERPNext",
+ "parent_icon": "ERP ABS",
  "restrict_removal": 0,
  "roles": [],
  "standard": 1
