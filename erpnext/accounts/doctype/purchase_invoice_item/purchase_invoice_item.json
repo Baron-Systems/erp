@@ -11,6 +11,7 @@
   "product_bundle",
   "col_break1",
   "item_name",
+  "packaging",
   "description_section",
   "description",
   "brand",
@@ -1011,13 +1012,20 @@
    "label": "Delivered by Supplier",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.packaging",
+   "fetch_if_empty": 1,
+   "fieldname": "packaging",
+   "fieldtype": "Int",
+   "label": "\u0627\u0644\u062a\u0639\u0628\u0626\u0629"
   }
  ],
  "grid_page_length": 50,
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-06 08:08:40.782395",
+ "modified": "2026-06-29 13:55:18.838984",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice Item",

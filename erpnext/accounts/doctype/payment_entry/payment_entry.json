@@ -129,6 +129,7 @@
    "reqd": 1
   },
   {
+   "default": "Cach",
    "fieldname": "column_break_5",
    "fieldtype": "Column Break"
   },
@@ -159,7 +160,7 @@
    "options": "Cost Center"
   },
   {
-   "default": "\u0646\u0642\u062f\u064a",
+   "default": "Cash",
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "label": "Mode of Payment",
@@ -806,7 +807,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2026-06-03 23:11:30.493588",
+ "modified": "2026-06-30 13:58:51.369751",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",

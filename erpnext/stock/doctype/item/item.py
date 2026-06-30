@@ -127,6 +127,7 @@ class Item(Document):
 		opening_stock: DF.Float
 		over_billing_allowance: DF.Float
 		over_delivery_receipt_allowance: DF.Float
+		packaging: DF.Int
 		production_capacity: DF.Int
 		purchase_tax_withholding_category: DF.Link | None
 		purchase_uom: DF.Link | None
