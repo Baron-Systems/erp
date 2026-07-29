@@ -628,76 +628,90 @@ class Item(Document):
 
 	def sync_table_orim_to_item_price(self):
 		"""Sync table_orim entries with Item Price records"""
-		# Prevent infinite loop when syncing from Item Price
-		if hasattr(frappe.local, 'skip_table_orim_sync') and frappe.local.skip_table_orim_sync:
+		if getattr(frappe.local, "skip_table_orim_sync", False):
 			return
-			
-		if not self.get("table_orim"):
-			# If table_orim is empty, remove all Item Price records created through this table
-			self.cleanup_orphaned_item_prices()
-			return
-			
-		# Get current table_orim combinations
-		current_combinations = set()
-		for row in self.table_orim:
-			if row.get("price_list") and row.get("uom"):
-				combination = (row.price_list, row.uom)
-				current_combinations.add(combination)
-				
-				if row.get("rate"):
-					# Check if Item Price already exists
-					existing_price = frappe.db.exists("Item Price", {
-						"item_code": self.name,
-						"price_list": row.price_list,
-						"uom": row.uom
-					})
-					
-					if not existing_price:
-						# Create new Item Price record
-						item_price = frappe.get_doc({
-							"doctype": "Item Price",
-							"item_code": self.name,
-							"item_name": self.item_name,
-							"item_description": self.description,
-							"brand": self.brand,
-							"price_list": row.price_list,
-							"uom": row.uom,
-							"price_list_rate": row.rate,
-							"currency": erpnext.get_default_currency() or frappe.db.get_default("currency"),
-							"selling": 1,
-							"buying": 1
-						})
-						item_price.insert(ignore_permissions=True)
+
+		previous_skip = getattr(frappe.local, "skip_table_orim_sync", False)
+		frappe.local.skip_table_orim_sync = True
+		try:
+			current_refs = {
+				row.item_price_reference
+				for row in (self.get("table_orim") or [])
+				if row.get("item_price_reference")
+			}
+
+			doc_before = self.get_doc_before_save()
+			old_refs = set()
+			if doc_before:
+				old_refs = {
+					row.get("item_price_reference")
+					for row in (doc_before.get("table_orim") or [])
+					if row.get("item_price_reference")
+				}
+
+			deleted_refs = old_refs - current_refs
+			for ref in deleted_refs:
+				if frappe.db.exists("Item Price", ref):
+					price_item_code = frappe.db.get_value("Item Price", ref, "item_code")
+					if price_item_code == self.name:
+						frappe.delete_doc("Item Price", ref, ignore_permissions=True)
+
+			for row in (self.get("table_orim") or []):
+				if row.get("rate") is None:
+					continue
+
+				if row.get("item_price_reference"):
+					if not frappe.db.exists("Item Price", row.item_price_reference):
+						row.db_set("item_price_reference", None, update_modified=False)
+						row.set("item_price_reference", None)
+						price_doc = frappe.new_doc("Item Price")
 					else:
-						# Update existing Item Price record
-						# Use doc.save() instead of db.set_value() to trigger on_update
-						# which syncs the price to table_orim
-						item_price_doc = frappe.get_doc("Item Price", existing_price)
-						item_price_doc.price_list_rate = row.rate
-						item_price_doc.item_name = self.item_name
-						item_price_doc.item_description = self.description
-						item_price_doc.brand = self.brand
-						item_price_doc.save(ignore_permissions=True)
-		
-		# Clean up Item Price records that are no longer in table_prmp
-		self.cleanup_orphaned_item_prices(current_combinations)
+						price_doc = frappe.get_doc("Item Price", row.item_price_reference)
+				else:
+					price_doc = frappe.new_doc("Item Price")
+
+				price_doc.item_code = self.name
+				price_doc.price_list = row.price_list
+				price_doc.uom = row.uom
+				price_doc.price_list_rate = row.rate
+				price_doc.item_name = self.item_name
+				price_doc.item_description = self.description
+				price_doc.brand = self.brand
+
+				price_list_data = frappe.db.get_value(
+					"Price List",
+					row.price_list,
+					["currency", "selling", "buying"],
+					as_dict=True,
+				)
+				if not price_list_data:
+					frappe.throw(_(f"Price List {row.price_list} not found in row {row.idx}"))
+				if not price_list_data.currency:
+					frappe.throw(_(f"Currency not configured for Price List {row.price_list}"))
+				price_doc.currency = price_list_data.currency
+				price_doc.selling = price_list_data.selling
+				price_doc.buying = price_list_data.buying
+				price_doc.save(ignore_permissions=True)
+
+				if not row.get("item_price_reference"):
+					row.item_price_reference = price_doc.name
+					row.db_set(
+						"item_price_reference",
+						price_doc.name,
+						update_modified=False,
+					)
+		except Exception:
+			frappe.log_error(
+				title=f"table_orim sync failed for Item {self.name}",
+				message=frappe.get_traceback(),
+			)
+			raise
+		finally:
+			frappe.local.skip_table_orim_sync = previous_skip
 	
 	def cleanup_orphaned_item_prices(self, current_combinations=None):
-		"""Remove Item Price records that are not in current table_prmp"""
-		if current_combinations is None:
-			current_combinations = set()
-			
-		# Get all Item Price records for this item
-		existing_prices = frappe.db.get_all("Item Price", 
-			filters={"item_code": self.name},
-			fields=["name", "price_list", "uom"]
-		)
-		
-		for price in existing_prices:
-			combination = (price.price_list, price.uom)
-			if combination not in current_combinations:
-				# This Item Price record is not in table_prmp, delete it
-				frappe.delete_doc("Item Price", price.name, ignore_permissions=True)
+		"""Deprecated: replaced by reference-based deletion in sync_table_orim_to_item_price"""
+		pass
 
 
 

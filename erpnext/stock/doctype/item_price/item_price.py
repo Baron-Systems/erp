@@ -171,59 +171,91 @@ class ItemPrice(Document):
 
 	def sync_to_table_orim(self):
 		"""Sync this Item Price to table_orim in the related Item"""
+		if getattr(frappe.local, "skip_table_orim_sync", False):
+			return
+
+		previous_skip = getattr(frappe.local, "skip_table_orim_sync", False)
 		try:
-			# Set flag to prevent infinite loop
 			frappe.local.skip_table_orim_sync = True
-			
-			item_doc = frappe.get_doc("Item", self.item_code)
-			
-			# Check if this combination already exists in table_orim
-			existing_row = None
-			for row in item_doc.get("table_orim", []):
-				if row.get("price_list") == self.price_list and row.get("uom") == self.uom:
-					existing_row = row
-					break
-			
-			if existing_row:
-				# Update existing row
-				existing_row.rate = self.price_list_rate
+
+			doc_before = self.get_doc_before_save()
+			old_item_code = doc_before.item_code if doc_before else None
+
+			if old_item_code and old_item_code != self.item_code:
+				frappe.db.delete(
+					"child item price",
+					{
+						"parent": old_item_code,
+						"parenttype": "Item",
+						"parentfield": "table_orim",
+						"item_price_reference": self.name,
+					},
+				)
+
+			row_name = frappe.db.get_value(
+				"child item price",
+				{
+					"parenttype": "Item",
+					"parentfield": "table_orim",
+					"item_price_reference": self.name,
+				},
+				"name",
+			)
+
+			values = {
+				"parent": self.item_code,
+				"price_list": self.price_list,
+				"uom": self.uom,
+				"rate": self.price_list_rate,
+			}
+
+			if row_name:
+				frappe.db.set_value(
+					"child item price",
+					row_name,
+					values,
+					update_modified=False,
+				)
 			else:
-				# Add new row
-				item_doc.append("table_orim", {
+				item_doc = frappe.get_doc("Item", self.item_code)
+				new_row = item_doc.append("table_orim", {
 					"price_list": self.price_list,
 					"uom": self.uom,
-					"rate": self.price_list_rate
+					"rate": self.price_list_rate,
+					"item_price_reference": self.name,
 				})
-			
-			item_doc.save(ignore_permissions=True)
-			
-		except Exception as e:
-			frappe.log_error(f"Error syncing Item Price {self.name} to table_orim: {e}")
+				new_row.db_insert()
+
+		except Exception:
+			frappe.log_error(
+				title=f"Item Price sync to table_orim failed: {self.name}",
+				message=frappe.get_traceback(),
+			)
+			raise
 		finally:
-			# Clear the flag
-			if hasattr(frappe.local, 'skip_table_orim_sync'):
-				delattr(frappe.local, 'skip_table_orim_sync')
+			frappe.local.skip_table_orim_sync = previous_skip
 
 	def remove_from_table_orim(self):
 		"""Remove this Item Price from table_orim in the related Item"""
+		if getattr(frappe.local, "skip_table_orim_sync", False):
+			return
+
+		previous_skip = getattr(frappe.local, "skip_table_orim_sync", False)
 		try:
-			# Set flag to prevent infinite loop
 			frappe.local.skip_table_orim_sync = True
-			
-			item_doc = frappe.get_doc("Item", self.item_code)
-			
-			# Find and remove the corresponding row
-			rows_to_keep = []
-			for row in item_doc.get("table_orim", []):
-				if not (row.get("price_list") == self.price_list and row.get("uom") == self.uom):
-					rows_to_keep.append(row)
-			
-			item_doc.table_orim = rows_to_keep
-			item_doc.save(ignore_permissions=True)
-			
-		except Exception as e:
-			frappe.log_error(f"Error removing Item Price {self.name} from table_orim: {e}")
+			frappe.db.delete(
+				"child item price",
+				{
+					"parenttype": "Item",
+					"parentfield": "table_orim",
+					"item_price_reference": self.name,
+				},
+			)
+		except Exception:
+			frappe.log_error(
+				title=f"Item Price remove from table_orim failed: {self.name}",
+				message=frappe.get_traceback(),
+			)
+			raise
 		finally:
-			# Clear the flag
-			if hasattr(frappe.local, 'skip_table_orim_sync'):
-				delattr(frappe.local, 'skip_table_orim_sync')
+			frappe.local.skip_table_orim_sync = previous_skip
