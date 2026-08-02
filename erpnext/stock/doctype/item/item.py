@@ -626,6 +626,44 @@ class Item(Document):
 			),
 		)
 
+	def _find_matching_item_price(self, row, price_list_data):
+		"""Find an existing Item Price that matches this table_orim row.
+
+		Returns:
+			name (str) if exactly one match found.
+			None if no match found.
+		"""
+		filters = {
+			"item_code": self.name,
+			"price_list": row.price_list,
+			"uom": row.uom,
+			"price_list_rate": row.rate,
+			"currency": price_list_data.currency,
+			"selling": cint(price_list_data.selling),
+			"buying": cint(price_list_data.buying),
+		}
+
+		matches = frappe.db.get_all(
+			"Item Price",
+			filters=filters,
+			fields=["name"],
+		)
+
+		if len(matches) == 0:
+			return None
+		if len(matches) == 1:
+			return matches[0].name
+
+		# Ambiguous: multiple Item Prices match
+		match_names = ", ".join(m.name for m in matches)
+		frappe.throw(
+			_(
+				"Multiple Item Price records match row {0} in Item {1}: {2}. "
+				"Please resolve duplicates before saving."
+			).format(row.idx, self.name, match_names),
+			title=_("Ambiguous Item Price Match"),
+		)
+
 	def sync_table_orim_to_item_price(self):
 		"""Sync table_orim entries with Item Price records"""
 		if getattr(frappe.local, "skip_table_orim_sync", False):
@@ -660,24 +698,6 @@ class Item(Document):
 				if row.get("rate") is None:
 					continue
 
-				if row.get("item_price_reference"):
-					if not frappe.db.exists("Item Price", row.item_price_reference):
-						row.db_set("item_price_reference", None, update_modified=False)
-						row.set("item_price_reference", None)
-						price_doc = frappe.new_doc("Item Price")
-					else:
-						price_doc = frappe.get_doc("Item Price", row.item_price_reference)
-				else:
-					price_doc = frappe.new_doc("Item Price")
-
-				price_doc.item_code = self.name
-				price_doc.price_list = row.price_list
-				price_doc.uom = row.uom
-				price_doc.price_list_rate = row.rate
-				price_doc.item_name = self.item_name
-				price_doc.item_description = self.description
-				price_doc.brand = self.brand
-
 				price_list_data = frappe.db.get_value(
 					"Price List",
 					row.price_list,
@@ -688,6 +708,37 @@ class Item(Document):
 					frappe.throw(_(f"Price List {row.price_list} not found in row {row.idx}"))
 				if not price_list_data.currency:
 					frappe.throw(_(f"Currency not configured for Price List {row.price_list}"))
+
+				if row.get("item_price_reference"):
+					if not frappe.db.exists("Item Price", row.item_price_reference):
+						row.db_set("item_price_reference", None, update_modified=False)
+						row.set("item_price_reference", None)
+						existing_price = self._find_matching_item_price(row, price_list_data)
+						if existing_price:
+							price_doc = frappe.get_doc("Item Price", existing_price)
+							row.db_set("item_price_reference", existing_price, update_modified=False)
+							row.set("item_price_reference", existing_price)
+						else:
+							price_doc = frappe.new_doc("Item Price")
+					else:
+						price_doc = frappe.get_doc("Item Price", row.item_price_reference)
+				else:
+					existing_price = self._find_matching_item_price(row, price_list_data)
+					if existing_price:
+						price_doc = frappe.get_doc("Item Price", existing_price)
+						row.db_set("item_price_reference", existing_price, update_modified=False)
+						row.set("item_price_reference", existing_price)
+					else:
+						price_doc = frappe.new_doc("Item Price")
+
+				price_doc.item_code = self.name
+				price_doc.price_list = row.price_list
+				price_doc.uom = row.uom
+				price_doc.price_list_rate = row.rate
+				price_doc.item_name = self.item_name
+				price_doc.item_description = self.description
+				price_doc.brand = self.brand
+
 				price_doc.currency = price_list_data.currency
 				price_doc.selling = price_list_data.selling
 				price_doc.buying = price_list_data.buying
