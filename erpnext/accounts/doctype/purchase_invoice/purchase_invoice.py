@@ -194,6 +194,7 @@ class PurchaseInvoice(BuyingController):
 		unrealized_profit_loss_account: DF.Link | None
 		update_billed_amount_in_purchase_order: DF.Check
 		update_billed_amount_in_purchase_receipt: DF.Check
+		update_item_prices: DF.Check
 		update_outstanding_for_self: DF.Check
 		update_stock: DF.Check
 		use_company_roundoff_cost_center: DF.Check
@@ -773,6 +774,9 @@ class PurchaseInvoice(BuyingController):
 		update_linked_doc(self.doctype, self.name, self.inter_company_invoice_reference)
 
 		self.process_common_party_accounting()
+
+		if self.update_item_prices and not self.is_return:
+			self.update_item_prices_from_invoice()
 
 	def on_update_after_submit(self):
 		fields_to_check = [
@@ -1869,6 +1873,61 @@ class PurchaseInvoice(BuyingController):
 		if update:
 			self.db_set("status", self.status, update_modified=update_modified)
 
+	def update_item_prices_from_invoice(self):
+		"""Update or create Item Price records based on the rates entered in this invoice."""
+		if not self.buying_price_list:
+			frappe.msgprint(_("Please set a Buying Price List to update item prices."))
+			return []
+
+		price_list_currency = frappe.get_cached_value("Price List", self.buying_price_list, "currency")
+		updated_items = []
+
+		for item in self.items:
+			if not item.item_code or not flt(item.rate):
+				continue
+
+			filters = {
+				"item_code": item.item_code,
+				"price_list": self.buying_price_list,
+				"buying": 1,
+			}
+			if item.uom:
+				filters["uom"] = item.uom
+
+			item_price_name = frappe.db.get_value("Item Price", filters, "name")
+			new_rate = flt(item.rate)
+
+			if self.currency != price_list_currency:
+				if not (flt(self.conversion_rate) and flt(self.plc_conversion_rate)):
+					continue
+				new_rate = new_rate * flt(self.conversion_rate) / flt(self.plc_conversion_rate)
+
+			if item_price_name:
+				item_price = frappe.get_doc("Item Price", item_price_name)
+				if flt(item_price.price_list_rate) != new_rate:
+					item_price.price_list_rate = new_rate
+					item_price.save()
+					updated_items.append(item.item_code)
+			else:
+				item_price = frappe.new_doc("Item Price")
+				item_price.item_code = item.item_code
+				item_price.price_list = self.buying_price_list
+				item_price.price_list_rate = new_rate
+				item_price.uom = item.uom
+				item_price.buying = 1
+				item_price.supplier = self.supplier
+				item_price.save()
+				updated_items.append(item.item_code)
+
+		if updated_items:
+			frappe.msgprint(
+				_("Updated item prices for: {0}").format(", ".join(set(updated_items))),
+				alert=True,
+				indicator="green",
+			)
+
+		return updated_items
+
 
 # to get details of purchase invoice/receipt from which this doc was created for exchange rate difference handling
 def get_purchase_document_details(doc):
@@ -1952,6 +2011,16 @@ def make_stock_entry(source_name, target_doc=None):
 	)
 
 	return doc
+
+
+@frappe.whitelist()
+def update_item_prices_from_purchase_invoice(purchase_invoice):
+	doc = frappe.get_doc("Purchase Invoice", purchase_invoice)
+	if doc.docstatus == 2:
+		frappe.throw(_("Cannot update item prices for a cancelled invoice"))
+	if doc.is_return:
+		frappe.throw(_("Cannot update item prices for a return invoice"))
+	return doc.update_item_prices_from_invoice()
 
 
 @frappe.whitelist()

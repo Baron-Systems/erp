@@ -55,6 +55,7 @@
   "price_list_currency",
   "plc_conversion_rate",
   "ignore_pricing_rule",
+  "update_item_prices",
   "items_section",
   "items",
   "section_break_26",
@@ -557,6 +558,13 @@
    "fieldtype": "Check",
    "label": "Ignore Pricing Rule",
    "permlevel": 1,
+   "print_hide": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "update_item_prices",
+   "fieldtype": "Check",
+   "label": "Update Item Prices on Submit",
    "print_hide": 1
   },
   {

@@ -88,6 +88,34 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 			erpnext.accounts.ledger_preview.show_stock_ledger_preview(this.frm);
 		}
 
+		if (doc.docstatus < 2 && !doc.is_return) {
+			this.frm.add_custom_button(
+				__("Update Item Prices"),
+				function () {
+					frappe.call({
+						method: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.update_item_prices_from_purchase_invoice",
+						args: {
+							purchase_invoice: me.frm.doc.name,
+						},
+						callback: function (r) {
+							if (r.message && r.message.length) {
+								frappe.show_alert({
+									message: __("Updated item prices for {0} items", [r.message.length]),
+									indicator: "green",
+								});
+							} else {
+								frappe.show_alert({
+									message: __("No item prices were updated"),
+									indicator: "blue",
+								});
+							}
+						},
+					});
+				},
+				__("Actions")
+			);
+		}
+
 		if (!doc.is_return && doc.docstatus == 1 && doc.outstanding_amount != 0) {
 			if (doc.on_hold) {
 				this.frm.add_custom_button(
