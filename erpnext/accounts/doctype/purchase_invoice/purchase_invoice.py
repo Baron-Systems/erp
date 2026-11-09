@@ -2132,3 +2132,97 @@ def make_purchase_receipt(source_name, target_doc=None, args=None):
 	)
 
 	return doc
+
+
+@frappe.whitelist()
+def get_items_buying_price(items, price_list=None):
+	"""Return buying price per item: from the given Buying Price List, else Item's last purchase rate."""
+	items = frappe.parse_json(items) if isinstance(items, str) else items
+	items = [d for d in (items or []) if d][:100]
+	if not items:
+		return {}
+
+	result = {}
+	item_data = frappe.get_all(
+		"Item",
+		filters={"name": ["in", items]},
+		fields=["name", "stock_uom", "last_purchase_rate"],
+	)
+	stock_uom_map = {d.name: d.stock_uom for d in item_data}
+
+	if price_list:
+		currency = frappe.get_cached_value("Price List", price_list, "currency")
+		prices = frappe.get_all(
+			"Item Price",
+			filters={"item_code": ["in", items], "price_list": price_list, "buying": 1},
+			fields=["item_code", "price_list_rate", "uom"],
+			order_by="valid_from desc",
+		)
+		for p in prices:
+			existing = result.get(p.item_code)
+			# prefer price in stock UOM
+			if existing and existing["uom"] == stock_uom_map.get(p.item_code):
+				continue
+			result[p.item_code] = {
+				"rate": flt(p.price_list_rate),
+				"uom": p.uom,
+				"currency": currency,
+				"source": "price_list",
+			}
+
+	company_currency = frappe.defaults.get_global_default("currency")
+	for d in item_data:
+		if d.name not in result and flt(d.last_purchase_rate):
+			result[d.name] = {
+				"rate": flt(d.last_purchase_rate),
+				"uom": d.stock_uom,
+				"currency": company_currency,
+				"source": "last_purchase_rate",
+			}
+
+	return result
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def supplier_item_query(doctype, txt, searchfield, start, page_len, filters):
+	"""Items linked to the supplier: Item Supplier table, Item default supplier,
+	or previously bought from this supplier (submitted Purchase Invoice / Receipt / Order)."""
+	if isinstance(filters, str):
+		filters = frappe.parse_json(filters)
+	supplier = (filters or {}).get("supplier")
+	if not supplier:
+		return []
+
+	txt = f"%{txt or ''}%"
+	return frappe.db.sql(
+		"""
+		select item.name, item.item_name, item.item_group
+		from `tabItem` item
+		where item.disabled = 0
+			and item.is_purchase_item = 1
+			and (item.name like %(txt)s or item.item_name like %(txt)s)
+			and item.name in (
+				select parent from `tabItem Supplier`
+					where supplier = %(supplier)s and parenttype = 'Item'
+				union
+				select parent from `tabItem Default`
+					where default_supplier = %(supplier)s and parenttype = 'Item'
+				union
+				select pii.item_code from `tabPurchase Invoice Item` pii
+					inner join `tabPurchase Invoice` pi on pi.name = pii.parent
+					where pi.supplier = %(supplier)s and pi.docstatus = 1
+				union
+				select pri.item_code from `tabPurchase Receipt Item` pri
+					inner join `tabPurchase Receipt` pr on pr.name = pri.parent
+					where pr.supplier = %(supplier)s and pr.docstatus = 1
+				union
+				select poi.item_code from `tabPurchase Order Item` poi
+					inner join `tabPurchase Order` po on po.name = poi.parent
+					where po.supplier = %(supplier)s and po.docstatus = 1
+			)
+		order by item.name
+		limit %(page_len)s offset %(start)s
+		""",
+		{"txt": txt, "supplier": supplier, "start": int(start), "page_len": int(page_len)},
+	)

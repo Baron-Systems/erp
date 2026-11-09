@@ -44,6 +44,122 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 		});
 	}
 
+	onload_post_render() {
+		super.onload_post_render();
+		this.setup_multiple_add_with_price();
+	}
+
+	setup_multiple_add_with_price() {
+		const frm = this.frm;
+		const grid = frm.get_field("items").grid;
+		const btn = $(grid.wrapper).find(".grid-add-multiple-rows:not(.grid-add-supplier-items)");
+		if (!btn.length || btn.attr("data-with-price")) return;
+
+		// "Add Multiple": all items + purchase price
+		btn.attr("data-with-price", 1)
+			.off("click")
+			.on("click", () => {
+				this.open_item_selector_with_price(grid);
+				return false;
+			});
+
+		// "Supplier Items": only items bought from / linked to the selected supplier
+		if (!$(grid.wrapper).find(".grid-add-supplier-items").length) {
+			$(`<button type="button" class="grid-add-multiple-rows grid-add-supplier-items btn btn-xs btn-secondary"
+				style="margin-left: 4px">${__("Supplier Items")}</button>`)
+				.toggleClass("hidden", btn.hasClass("hidden"))
+				.insertAfter(btn)
+				.on("click", () => {
+					if (!frm.doc.supplier) {
+						frappe.msgprint(__("Please select a Supplier first"));
+						return false;
+					}
+					this.open_item_selector_with_price(grid, frm.doc.supplier);
+					return false;
+				});
+		}
+	}
+
+	open_item_selector_with_price(grid, supplier) {
+		const frm = this.frm;
+		const link_field = frappe.meta.get_docfield(grid.df.options, "item_code");
+		let target = grid;
+
+		if (supplier) {
+			// LinkSelector reads the query from target.fieldinfo; use a thin wrapper of the grid
+			target = {
+				is_grid: true,
+				frm: grid.frm,
+				df: grid.df,
+				add_new_row: (...args) => grid.add_new_row(...args),
+				fieldinfo: {
+					item_code: {
+						get_query: () => ({
+							query: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.supplier_item_query",
+							filters: { supplier: supplier },
+						}),
+					},
+				},
+			};
+		}
+
+		const selector = new frappe.ui.form.LinkSelector({
+			doctype: link_field.options,
+			fieldname: "item_code",
+			qty_fieldname: "qty",
+			get_query: link_field.get_query,
+			target: target,
+			txt: "",
+		});
+
+		const add_prices = (wrapper) => {
+			const rows = $(wrapper).find(".link-select-row:not([data-price-loaded])");
+			if (!rows.length) return;
+			rows.attr("data-price-loaded", 1);
+			const items = rows.map((i, r) => $(r).find("a[data-value]").attr("data-value")).get();
+
+			frappe.call({
+				method: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.get_items_buying_price",
+				args: { items: items, price_list: frm.doc.buying_price_list },
+				callback: (r) => {
+					const prices = r.message || {};
+					rows.each((i, row) => {
+						const item = $(row).find("a[data-value]").attr("data-value");
+						const p = prices[item];
+						const html = p
+							? `<span class="indicator-pill ${
+									p.source === "price_list" ? "blue" : "gray"
+							  }" title="${
+									p.source === "price_list"
+										? __("Buying Price List")
+										: __("Last Purchase Rate")
+							  }">${__("Purchase Price")}: ${format_currency(p.rate, p.currency)}${
+									p.uom ? " / " + __(p.uom) : ""
+							  }</span>`
+							: `<span class="text-muted small">${__("Purchase Price")}: -</span>`;
+						$(row)
+							.find(".col-xs-4")
+							.append(`<div class="link-select-price" style="margin-top:4px">${html}</div>`);
+					});
+				},
+			});
+		};
+
+		const attach = () => {
+			if (!selector.dialog) return setTimeout(attach, 100);
+			if (supplier) {
+				selector.dialog.set_title(__("Supplier Items") + ": " + supplier);
+			}
+			const wrapper = selector.dialog.fields_dict.results.$wrapper.get(0);
+			const observer = new MutationObserver(() => add_prices(wrapper));
+			observer.observe(wrapper, { childList: true });
+			add_prices(wrapper);
+			selector.dialog.onhide = () => observer.disconnect();
+		};
+		attach();
+		grid.grid_pagination.go_to_last_page_to_add_row();
+	}
+
 	onload() {
 		super.onload();
 
