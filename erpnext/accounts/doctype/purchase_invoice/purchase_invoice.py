@@ -725,6 +725,21 @@ class PurchaseInvoice(BuyingController):
 		validate_docs_for_voucher_types(["Purchase Invoice"])
 		validate_docs_for_deferred_accounting([], [self.name])
 
+	def on_update(self):
+		super().on_update()
+		self.update_item_packaging()
+
+	def update_item_packaging(self):
+		"""Store the packaging entered in the invoice rows back on the Item master."""
+		packaging_map = {}
+		for row in self.items:
+			if row.item_code and cint(row.get("packaging")) > 0:
+				packaging_map[row.item_code] = cint(row.packaging)
+
+		for item_code, packaging in packaging_map.items():
+			if cint(frappe.db.get_value("Item", item_code, "packaging")) != packaging:
+				frappe.db.set_value("Item", item_code, "packaging", packaging)
+
 	def before_submit(self):
 		self.create_remarks()
 
@@ -777,6 +792,8 @@ class PurchaseInvoice(BuyingController):
 
 		if self.update_item_prices and not self.is_return:
 			self.update_item_prices_from_invoice()
+
+		self.update_item_packaging()
 
 	def on_update_after_submit(self):
 		fields_to_check = [

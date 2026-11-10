@@ -188,6 +188,33 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 		if (this.frm.doc.supplier && this.frm.doc.__islocal) {
 			this.frm.trigger("supplier");
 		}
+
+		if (this.frm.doc.__islocal) {
+			this.set_new_invoice_defaults();
+		}
+	}
+
+	set_new_invoice_defaults() {
+		const frm = this.frm;
+		if (!frm.doc.bill_date) {
+			frm.set_value("bill_date", frm.doc.posting_date || frappe.datetime.get_today());
+		}
+
+		// Default Warehouse from Stock Settings (only if it belongs to the invoice's company)
+		const default_warehouse = frappe.defaults.get_default("default_warehouse");
+		if (!frm.doc.set_warehouse && default_warehouse) {
+			frappe.db.get_value("Warehouse", default_warehouse, ["company", "is_group", "disabled"]).then((r) => {
+				const w = r.message || {};
+				if (
+					!frm.doc.set_warehouse &&
+					!w.is_group &&
+					!w.disabled &&
+					(!frm.doc.company || w.company === frm.doc.company)
+				) {
+					frm.set_value("set_warehouse", default_warehouse);
+				}
+			});
+		}
 	}
 
 	refresh(doc) {

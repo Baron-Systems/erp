@@ -561,7 +561,7 @@
    "print_hide": 1
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "update_item_prices",
    "fieldtype": "Check",
    "label": "Update Item Prices on Submit",

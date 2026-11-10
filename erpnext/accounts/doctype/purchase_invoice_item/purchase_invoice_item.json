@@ -1014,10 +1014,12 @@
    "read_only": 1
   },
   {
+   "columns": 1,
    "fetch_from": "item_code.packaging",
    "fetch_if_empty": 1,
    "fieldname": "packaging",
    "fieldtype": "Int",
+   "in_list_view": 1,
    "label": "\u0627\u0644\u062a\u0639\u0628\u0626\u0629"
   }
  ],
